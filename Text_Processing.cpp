@@ -15,9 +15,8 @@ int main(const int argc, const char* argv[])
         return 0;
     }
 
-
     Text_Processing(argv[1], argv[2]);
-    return 1;
+    return 0;
 }
 
 int Text_Processing(const char* from, const char* to)
@@ -62,12 +61,32 @@ int Text_Processing(const char* from, const char* to)
     return num_words;
 */
 
+    int len = 0;
     for (int i = 0; buf[i] != '\0'; i++)
     {
-        if(isalpha(buf[i]))
+        if(isalpha(buf[i]) || buf[i] == '-')
+        {
             fprintf(output_file, "%c", buf[i]);
-        else if(isspace(buf[i]))
+            len++;
+        }
+        else if((isspace(buf[i]) || ispunct(buf[i])) && isalpha(buf[i + 1]))
+        {
+            while(len < 32 && len != 0)
+            {
+                fprintf(output_file, "\0");
+                len++;
+            }
             fprintf(output_file, "\n");
+            len = 0;
+        }
+        else
+        {
+            while(len < 32 && len != 0)
+            {
+                fprintf(output_file, "\0");
+                len++;
+            }
+        }
     }
     free(buf);
     fclose(output_file);

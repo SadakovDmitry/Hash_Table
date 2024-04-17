@@ -8,22 +8,29 @@
 #include "hash_func.h"
 #include "hash_table_func.h"
 
-struct Hash_Table* Hash_Table_Ctor(const char* file_name, int size, int (Calc_Hash) (char*, int))
+#define red(str)   "\033[31m"#str"\033[0m"
+#define green(str) "\033[32m"#str"\033[0m"
+
+struct Hash_Table* Hash_Table_Ctor(const char* file_name, size_t size, uint32_t (Calc_Hash) (char*, uint32_t))
 {
     FILE* file = fopen(file_name, "r");
     assert(file);
-    char* str = (char*) calloc(100, sizeof(char));
+    char* str = (char*) calloc(32, sizeof(char));
     struct Hash_Table* hash_table = (struct Hash_Table*) calloc(1, sizeof(struct Hash_Table));
     hash_table -> data = (struct Node**) calloc(size, sizeof(struct Node*));
     hash_table -> Calc_Hash = Calc_Hash;
     hash_table -> size = size;
 
-    for (int i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
         hash_table -> data[i] = NULL;
 
     //for (int i = 0; i < num_words * LOAD_FACTOR; i++)
     while (fscanf(file, "%s", str) == 1)
-        Insert_Elem(hash_table, str);
+    {
+        //printf("<%s>\n", str);
+        char* val = strndup(str, 32);
+        Insert_Elem(hash_table, val);
+    }
 
     return hash_table;
 }
@@ -45,14 +52,14 @@ struct Node* Is_in_Hash_Table(struct Hash_Table* hash_table, char* val)
 
 void Insert_Elem(struct Hash_Table* hash_table, char* val)
 {
-    int index = hash_table -> Calc_Hash(val, hash_table -> size);
-
     struct Node* find_node = Is_in_Hash_Table(hash_table, val);
     if(find_node)
     {
         (find_node -> num)++;
         return;
     }
+
+    int index = hash_table -> Calc_Hash(val, hash_table -> size);
 
     struct Node* new_node = Create_Node(val);
     new_node -> next = hash_table -> data[index];
@@ -91,7 +98,7 @@ void Delete_Elem(struct Hash_Table* hash_table, char* val)
 int* Find_Distribution(struct Hash_Table* hash_table)
 {
     int* dist = (int*) calloc(hash_table -> size, sizeof(int));
-    for (int i = 0; i < hash_table -> size; i++)
+    for (size_t i = 0; i < hash_table -> size; i++)
     {
         struct Node* now_node = hash_table -> data[i];
         int count = 0;
@@ -108,15 +115,16 @@ int* Find_Distribution(struct Hash_Table* hash_table)
 struct Node* Create_Node(char* val)
 {
     struct Node* new_node = (struct Node*) calloc(1, sizeof(struct Node));
-    new_node -> val = strdup(val); // TODO: mop up mem leak
+    //new_node -> val = strndup(val, 32); // TODO: mop up mem leak
+    new_node -> val = val;
     new_node -> num = 1;
     new_node -> next = NULL;
     return new_node;
 }
 
-void Print_Arr(FILE* file, int* data, int size)
+void Print_Arr(FILE* file, int* data, size_t size)
 {
-    for (int i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
     {
         fprintf(file, "%d\n", data[i]);
     }
@@ -126,7 +134,7 @@ void Print_Arr(FILE* file, int* data, int size)
 int Hash_Table_Len(struct Hash_Table* hash_table)
 {
     int len = 0;
-    for (int i = 0; i < hash_table -> size; i++)
+    for (size_t i = 0; i < hash_table -> size; i++)
     {
         struct Node* now_node = hash_table -> data[i];
         while(now_node != NULL)
@@ -136,4 +144,9 @@ int Hash_Table_Len(struct Hash_Table* hash_table)
         }
     }
     return len;
+}
+
+int my_strcmp(char* str_1, char* str_2)
+{
+    return (int) str_1[0] - (int) str_2[0];
 }

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import sys
 
 fig, ax = plt.subplots()
 
@@ -12,7 +13,7 @@ with open("dist.txt", 'r') as file:
 
 
 index = []
-for i in range(0, 738):
+for i in range(0, 769):
     index.append(i)
 
 #ax.plot(index, dist)
@@ -28,5 +29,7 @@ plt.ylabel('count',color='black')
 plt.grid(True)
 #plt.legend(['Mid Elem','Mid of 3', 'Random', 'Mid of 3 random'], loc=2)
 
-print(math.sqrt(np.var(rep)))
-plt.show()
+print(math.sqrt(np.var(dist)))
+#plt.show()
+#plt.savefig('Graphics/hash.png')
+plt.savefig(sys.argv[1])
