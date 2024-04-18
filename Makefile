@@ -27,5 +27,6 @@ chart :
 	@python3 Distribution.py Graphics/hash.png
 
 run_for_kcache :
-	@g++ Hash_Table.cpp Hash_func.cpp Hash_Table_func.cpp -o $(TARGET) -g
-	@valgrind --tool=callgrind ./hash_table text_out.txt 4
+	@nasm -f macho64 Crc32.asm -o crc32.o
+	@g++ crc32.o Hash_Table.cpp Hash_func.cpp Hash_Table_func.cpp $(MY_OPT) -O3 -o $(TARGET) -Wl,-no_pie -Wformat=2 -g
+	@valgrind --tool=callgrind ./hash_table text_out.txt 6
