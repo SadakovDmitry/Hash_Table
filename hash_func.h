@@ -1,6 +1,16 @@
 #ifndef USED_HF
 #define USED_HF
 
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <ctype.h>
+#include <stdint.h>
+
+//typedef unsigned int uint32_t;
 
 const uint32_t Crc32_Table[256] = {
     0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA,

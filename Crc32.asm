@@ -17,6 +17,6 @@ Next_iter:
     crc32 eax, byte [rdi + r11]
     inc r11
     cmp r11, rsi
-    jne Next_iter
+    jb Next_iter
     ret
 ;============================================================================

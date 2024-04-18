@@ -1,12 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include <stdint.h>
 #include "hash_func.h"
+#include "hash_table_func.h"
 
 uint32_t Calc_Hash_First_Letter(char* x, uint32_t size)
 {
@@ -71,13 +64,21 @@ uint32_t Rot_right(uint32_t num, uint32_t n)
 uint32_t Calc_Hash_Crc32(char* x, uint32_t size)
 {
     #ifndef WITH_MY_CRC32
-    uint32_t crc = 0xFFFFFFFFUL;
-    size_t len = strlen(x);
+        uint32_t crc = 0xFFFFFFFFUL;
+        #ifdef WITH_MY_STRLEN
+        size_t len = my_strlen(x);
+        #else
+        size_t len = strlen(x);
+        #endif
 
-    while (len--)
-        crc = (crc >> 8) ^ Crc32_Table[(crc ^ *x++) & 0xFF];
+        while (len--)
+            crc = (crc >> 8) ^ Crc32_Table[(crc ^ *x++) & 0xFF];
     #else
-    unsigned long len = strlen(x);
+        #ifdef WITH_MY_STRLEN
+        unsigned long len = my_strlen(x);
+        #else
+        unsigned long len = strlen(x);
+        #endif
 
     uint32_t crc = my_crc32(x, len);
     #endif
@@ -86,7 +87,11 @@ uint32_t Calc_Hash_Crc32(char* x, uint32_t size)
 
 uint32_t Calc_Hash_My_Crc32(char* x, uint32_t size)
 {
-    unsigned long len = strlen(x);
+    #ifdef WITH_MY_STRLEN
+        size_t len = my_strlen(x);
+    #else
+        size_t len = strlen(x);
+    #endif
 
     uint32_t hash = my_crc32(x, len);
     return hash % size;

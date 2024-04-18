@@ -26,12 +26,36 @@ struct Hash_Table* Hash_Table_Ctor(const char* file_name, size_t size, uint32_t 
 
     while (fscanf(file, "%s", in_word -> str) == 1)
     {
+        #ifdef WITH_MY_STRLEN
         size_t len = my_strlen(in_word -> str);
+        #else
+        size_t len = strlen(in_word -> str);
+        #endif
         memset(in_word -> str + len, '\0', 32 - len);
         Insert_Elem(hash_table, in_word);
     }
 
+    free(in_word);
+
     return hash_table;
+}
+
+void Hash_Table_Dtor(struct Hash_Table* hash_table)
+{
+    for (size_t i = 0; i < hash_table -> size; i++)
+    {
+        struct Node* temp_node = hash_table -> data[i];
+        while(hash_table -> data[i] != NULL)
+        {
+            temp_node = hash_table -> data[i];
+            hash_table -> data[i] = (hash_table -> data[i]) -> next;
+
+            free(temp_node -> val);
+            free(temp_node);
+        }
+    }
+    free(hash_table -> data);
+    free(hash_table);
 }
 
 struct Node* Is_in_Hash_Table(struct Hash_Table* hash_table, union Value* word)
@@ -42,11 +66,11 @@ struct Node* Is_in_Hash_Table(struct Hash_Table* hash_table, union Value* word)
     while(now_node != NULL)
     {
         #ifdef WITH_MY_STRCMP
-            if(!my_strcmp(word -> reg_str, (now_node -> val) -> reg_str))
+            if(!my_strcmp((__m256i*)(word -> str), (__m256i*)((now_node -> val) -> str)))
         #else
             if(!strcmp(word -> str, (now_node -> val) -> str))
         #endif
-            return now_node;
+                return now_node;
 
         now_node = now_node -> next;
     }
@@ -83,7 +107,7 @@ void Delete_Elem(struct Hash_Table* hash_table, union Value* del_word)
     while(now_node != NULL)
     {
         #ifdef WITH_MY_STRCMP
-            if(!my_strcmp(del_word -> reg_str, (now_node -> val) -> reg_str))
+            if(!my_strcmp((__m256i*)(del_word -> str), (__m256i*)((now_node -> val) -> str)))
         #else
             if(!strcmp(del_word -> str, (now_node -> val) -> str))
         #endif
@@ -155,9 +179,12 @@ int Hash_Table_Len(struct Hash_Table* hash_table)
     return len;
 }
 
-int my_strcmp(__m256 str_1, __m256 str_2)
+int my_strcmp(__m256i* str_1, __m256i* str_2)
 {
-    __m256i res_cmp = _mm256_cmpeq_epi8(str_1, str_2);
+    __m256i str_reg_1 = _mm256_lddqu_si256(str_1);
+    __m256i str_reg_2 = _mm256_lddqu_si256(str_2);
+
+    __m256i res_cmp = _mm256_cmpeq_epi8(str_reg_1, str_reg_2);
     int mask = ~_mm256_movemask_epi8(res_cmp);
 
     return mask;
@@ -166,60 +193,33 @@ int my_strcmp(__m256 str_1, __m256 str_2)
 size_t my_strlen(char* str)
 {
     size_t len = 0;
-    /*
-    asm (
-        "mov %1, %%rdi\n"
-        "xor %%rcx, %%rcx\n"
-        "next_iter:\n"
-        "cmpb $0, (%%rdi, %%rcx)\n"
-        "je .end\n"
-        "inc %%rcx\n"
-        //"inc %%rdi\n"
-        "jmp next_iter\n"
-        ".end:\n"
-        "mov %%rcx, %0\n"
-        : "=r" (len)
-        : "r" (str)
-        : "%rcx", "%rdi"
-    );
-    */
-    /*
-    asm (
-        "xor %%rax, %%rax\n"    // Обнуляем rax (используется для подсчета длины)
-        "mov %1, %%rdi\n"       // Загружаем адрес строки в rdi
-        "not %%rcx\n"           // Устанавливаем rcx в максимальное значение
-        "xor %%rax, %%rax\n"    // Обнуляем rax (для корректного сравнения)
-        "mov $0xFF, %%al\n"     // Устанавливаем al в максимальное значение байта
-        "repnz scasb\n"         // Сравниваем байты в rdi с al (0xFF) пока rcx != 0
-        "neg %%rcx\n"           // Инвертируем rcx для получения длины
-        "dec %%rcx\n"           // Уменьшаем длину на 1 (не считая нулевой символ)
-        "mov %%rcx, %0\n"       // Сохраняем длину в переменную len
-        : "=r" (len)            // Выходное значение - длина строки
-        : "r" (str)             // Входное значение - адрес строки
-        : "%rax", "%rdi", "%rcx"// Используемые регистры
-    );
-    */
 
-    asm (
+    asm volatile(
         ".intel_syntax noprefix\n\t"
 
-        //"mov rdi, %1\n\t"
+        "mov rdi, %1\n\t"
         "xor rcx, rcx\n"
-        ".next: \n\t"
-        "cmp byte ptr [rdi], 0x0\n\t"
-        "jz .end\n\t"
+        ".next%=: \n\t"
+        "cmp byte ptr [rdi], 0\n\t"
+        "je .end%=\n\t"
+        "cmp byte ptr [rdi], 13\n\t"
+        "je .end%=\n\t"
+
         "inc rcx\n\t"
         "inc rdi\n\t"
-        "jmp .next\n"
-        ".end: \n\t"
-        //"mov %0, rcx\n\t"
+        "jmp .next%=\n"
+        ".end%=: \n\t"
+        "mov %0, rcx\n\t"
 
         ".att_syntax prefix\n"
 
-        : "=%rcx" (len)
-        : "%rdi" (str)
-        : "%rcx", "%rdi"
+        : "=r" (len)
+        : "r" (str)
+        : "%rcx", "%rdi", "cc"
     );
-
+    
+    //if(len != strlen(str))
+    //    printf(red(my)" = %d " green(std)" = %d\n", len, strlen(str));
+    
     return len;
 }
