@@ -37,6 +37,7 @@ int*   Find_Distribution            (struct Hash_Table* hash_table);
 int    Hash_Table_Len               (struct Hash_Table* hash_table);
 void   Print_Arr                    (FILE* file, int* data, size_t size);
 int    my_strcmp                    (__m256 str_1, __m256 str_2);
+size_t my_strlen                    (char* str);
 
 
 #endif

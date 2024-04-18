@@ -47,7 +47,7 @@ int main(const int argc, const char* argv[])
     double time = 0.0;
     time_t start = clock();
 
-    for(int i = 0 ; i < 1000000; i++)
+    for(int i = 0 ; i < 10000000; i++)
     {
         union Value val = {};
         strncpy(val.str, "ciecnie", 32);

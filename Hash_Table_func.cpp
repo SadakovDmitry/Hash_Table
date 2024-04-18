@@ -26,7 +26,7 @@ struct Hash_Table* Hash_Table_Ctor(const char* file_name, size_t size, uint32_t 
 
     while (fscanf(file, "%s", in_word -> str) == 1)
     {
-        int len = strlen(in_word -> str);
+        size_t len = my_strlen(in_word -> str);
         memset(in_word -> str + len, '\0', 32 - len);
         Insert_Elem(hash_table, in_word);
     }
@@ -161,4 +161,65 @@ int my_strcmp(__m256 str_1, __m256 str_2)
     int mask = ~_mm256_movemask_epi8(res_cmp);
 
     return mask;
+}
+
+size_t my_strlen(char* str)
+{
+    size_t len = 0;
+    /*
+    asm (
+        "mov %1, %%rdi\n"
+        "xor %%rcx, %%rcx\n"
+        "next_iter:\n"
+        "cmpb $0, (%%rdi, %%rcx)\n"
+        "je .end\n"
+        "inc %%rcx\n"
+        //"inc %%rdi\n"
+        "jmp next_iter\n"
+        ".end:\n"
+        "mov %%rcx, %0\n"
+        : "=r" (len)
+        : "r" (str)
+        : "%rcx", "%rdi"
+    );
+    */
+    /*
+    asm (
+        "xor %%rax, %%rax\n"    // Обнуляем rax (используется для подсчета длины)
+        "mov %1, %%rdi\n"       // Загружаем адрес строки в rdi
+        "not %%rcx\n"           // Устанавливаем rcx в максимальное значение
+        "xor %%rax, %%rax\n"    // Обнуляем rax (для корректного сравнения)
+        "mov $0xFF, %%al\n"     // Устанавливаем al в максимальное значение байта
+        "repnz scasb\n"         // Сравниваем байты в rdi с al (0xFF) пока rcx != 0
+        "neg %%rcx\n"           // Инвертируем rcx для получения длины
+        "dec %%rcx\n"           // Уменьшаем длину на 1 (не считая нулевой символ)
+        "mov %%rcx, %0\n"       // Сохраняем длину в переменную len
+        : "=r" (len)            // Выходное значение - длина строки
+        : "r" (str)             // Входное значение - адрес строки
+        : "%rax", "%rdi", "%rcx"// Используемые регистры
+    );
+    */
+
+    asm (
+        ".intel_syntax noprefix\n\t"
+
+        //"mov rdi, %1\n\t"
+        "xor rcx, rcx\n"
+        ".next: \n\t"
+        "cmp byte ptr [rdi], 0x0\n\t"
+        "jz .end\n\t"
+        "inc rcx\n\t"
+        "inc rdi\n\t"
+        "jmp .next\n"
+        ".end: \n\t"
+        //"mov %0, rcx\n\t"
+
+        ".att_syntax prefix\n"
+
+        : "=%rcx" (len)
+        : "%rdi" (str)
+        : "%rcx", "%rdi"
+    );
+
+    return len;
 }
