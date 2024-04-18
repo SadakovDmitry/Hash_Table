@@ -26,11 +26,7 @@ int Text_Processing(const char* from, const char* to)
     FILE* input_file = fopen(from, "r");
     assert(input_file);
     char* buf = Read_file(&len_buf, input_file, &size_of_file);
-    //printf("%d", len_buf);
-    //getchar();
     fclose(input_file);
-
-    //fprintf(stderr, "ERROR\n");
 
     FILE* output_file = fopen(to, "w");
     assert(output_file);
@@ -105,6 +101,5 @@ char* Read_file(int* len_buf, FILE* file, int* file_size)
     fread(buf, sizeof (char), st.st_size, file);
 
     //printf("\nBUF = %s\n", buf);
-
     return buf;
 }

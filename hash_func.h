@@ -76,6 +76,9 @@ uint32_t Calc_Hash_Sum_Letters  (char* x, uint32_t size);
 uint32_t Calc_Hash_Rol          (char* x, uint32_t size);
 uint32_t Calc_Hash_Ror          (char* x, uint32_t size);
 uint32_t Calc_Hash_Crc32        (char* x, uint32_t size);
+uint32_t Calc_Hash_My_Crc32     (char* x, uint32_t size);
+
+extern "C" { uint32_t my_crc32(char* x, unsigned long len);}
 
 uint32_t Rot_right(uint32_t num, uint32_t n);
 uint32_t Rot_left (uint32_t num, uint32_t n);

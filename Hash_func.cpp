@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include "hash_func.h"
 
-
 uint32_t Calc_Hash_First_Letter(char* x, uint32_t size)
 {
     uint32_t hash = (uint32_t) x[0];
@@ -71,11 +70,26 @@ uint32_t Rot_right(uint32_t num, uint32_t n)
 
 uint32_t Calc_Hash_Crc32(char* x, uint32_t size)
 {
+    #ifndef WITH_MY_CRC32
     uint32_t crc = 0xFFFFFFFFUL;
     size_t len = strlen(x);
 
     while (len--)
         crc = (crc >> 8) ^ Crc32_Table[(crc ^ *x++) & 0xFF];
+    #else
+    unsigned long len = strlen(x);
 
-    return (crc ^ 0xFFFFFFFF) % size;
+    uint32_t crc = my_crc32(x, len);
+    #endif
+    return crc % size;
 }
+
+uint32_t Calc_Hash_My_Crc32(char* x, uint32_t size)
+{
+    unsigned long len = strlen(x);
+
+    uint32_t hash = my_crc32(x, len);
+    return hash % size;
+}
+
+

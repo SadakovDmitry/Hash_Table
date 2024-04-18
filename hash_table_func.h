@@ -1,9 +1,22 @@
 #ifndef USED_HTF
 #define USED_HTF
 
+#include <immintrin.h>
+
+#define YES 1;
+#define NO  0;
+#define red(str)   "\033[31m"#str"\033[0m"
+#define green(str) "\033[32m"#str"\033[0m"
+
+union Value
+{
+    char str[32];
+    __m256i reg_str;
+};
+
 struct Node
 {
-    char* val;
+    union Value* val;
     int num;
     struct Node* next;
 };
@@ -15,16 +28,15 @@ struct Hash_Table
     uint32_t (* Calc_Hash) (char*, uint32_t);
 };
 
-#define YES 1;
-#define NO  0;
+struct Hash_Table* Hash_Table_Ctor  (const char* file_name, size_t size, uint32_t (Calc_Hash) (char*, uint32_t));
+struct Node* Is_in_Hash_Table       (struct Hash_Table* hash_table, union Value* word);
+void   Insert_Elem                  (struct Hash_Table* hash_table, union Value* in_word);
+void   Delete_Elem                  (struct Hash_Table* hash_table, union Value* del_word);
+struct Node* Create_Node            (char* val);
+int*   Find_Distribution            (struct Hash_Table* hash_table);
+int    Hash_Table_Len               (struct Hash_Table* hash_table);
+void   Print_Arr                    (FILE* file, int* data, size_t size);
+int    my_strcmp                    (__m256 str_1, __m256 str_2);
 
-struct Hash_Table* Hash_Table_Ctor(const char* file_name, size_t size, uint32_t (Calc_Hash) (char*, uint32_t));
-struct Node* Is_in_Hash_Table(struct Hash_Table* hash_table, char* val);
-void Insert_Elem(struct Hash_Table* hash_table, char* val);
-void Delete_Elem(struct Hash_Table* hash_table, char* val);
-struct Node* Create_Node(char* val);
-int* Find_Distribution(struct Hash_Table* hash_table);
-int Hash_Table_Len(struct Hash_Table* hash_table);
-void Print_Arr(FILE* file, int* data, size_t size);
 
 #endif

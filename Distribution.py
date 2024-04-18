@@ -29,7 +29,7 @@ plt.ylabel('count',color='black')
 plt.grid(True)
 #plt.legend(['Mid Elem','Mid of 3', 'Random', 'Mid of 3 random'], loc=2)
 
-print(math.sqrt(np.var(dist)))
+print("Despersion =",math.sqrt(np.var(dist)))
 #plt.show()
 #plt.savefig('Graphics/hash.png')
 plt.savefig(sys.argv[1])
