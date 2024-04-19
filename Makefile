@@ -29,5 +29,5 @@ chart :
 
 run_for_kcashe :
 	@nasm -g -f elf64 Crc32.asm -o crc32.o
-	@g++ -g crc32.o Hash_Table.cpp Hash_func.cpp Hash_Table_func.cpp $(MY_OPT) $(FLAGS) -o $(TARGET) -no-pie
+	@g++ -g crc32.o Hash_Table.cpp Hash_func.cpp Hash_Table_func.cpp $(MY_OPT) $(FLAGS) -o $(TARGET) -no-pie -g
 	@valgrind --tool=callgrind ./hash_table text_out.txt 6
