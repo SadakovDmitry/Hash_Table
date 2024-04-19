@@ -3,21 +3,21 @@
 * Написать хеш таблицу используя метод цепочек
 * Написать 7 хеш-функций для нашей таблицы
 * Написать 3 различных оптимизации
-    * с помощью прямой ассемблерной встаки 
-    * с помощью SIMD инструкций 
-    * с помощью функции на ассемблере 
+    * с помощью прямой ассемблерной встаки
+    * с помощью SIMD инструкций
+    * с помощью функции на ассемблере
 ## Ход работы
 ### 1) Реализовали хеш-таблицу на массиве указателей на списки.
 ### 2) Сравнение хеш функций:
 
 Рассмотрим все способы хеширования и построим для кадого график на котором показано распределение элементов по хеш-таблице.
 
-|hash всегда 0|hash = ASCII коду первой символа строки| 
-|:--:|:--:|         
+|hash всегда 0|hash = ASCII коду первой символа строки|
+|:--:|:--:|
 |<img src="Graphics/Hash_Zero.png"         alt="drawing" width="300"/> | <img src="Graphics/Hash_First_Letter.png" alt="drawing" width="300"/>|
 | Hash = длинна слова | Hash = сумма ASCII кодов каждого символа в строке |
 |<img src="Graphics/Hash_Len_Word.png"     alt="drawing" width="300"/> | <img src="Graphics/Hash_Sum_Letters.png"  alt="drawing" width="300"/>|
-|Hash = сдвиг по кругу от предыдущего хеша | Hash = CRC32|
+|Hash = сдвиг по кругу вправо от предыдущего хеша | Hash = сдвиг по кругу влево от предыдущего хеша|
 |<img src="Graphics/Hash_Rol.png"     alt="drawing" width="300"/> | <img src="Graphics/Hash_Ror.png"    alt="drawing" width="300"/>|
 |Crc32_hash|
 |<img src="Graphics/Hash_Crc32.png"     alt="drawing" width="300"/>|
@@ -30,7 +30,7 @@
 |2   |len(str)|87.81|
 |3   |sum ASCII str[i]|7.68|
 |4   |ror(hash(n - 1)) * ASCII str[n]|3.8|
-|5   |rol(hash(n - 1)) * ASCII str[n]|4.98| 
+|5   |rol(hash(n - 1)) * ASCII str[n]|4.98|
 |6   |crc32|3.22|
 
 ### В итоге видим, что лучшей оказалась хеш-функция CRC32, значит продолжим оптимизировать ее.
@@ -51,7 +51,7 @@
 
     ```C
     int my_strcmp(__m256i* str_1, __m256i* str_2)
-    {   
+    {
         __m256i str_reg_1 = _mm256_lddqu_si256(str_1);
         __m256i str_reg_2 = _mm256_lddqu_si256(str_2);
 
@@ -126,14 +126,14 @@
     <summary>strcmp_simd</summary>
 
         ```C
-        size_t strlen_simd(char* str) 
+        size_t strlen_simd(char* str)
         {
             __m256i zero = _mm256_setzero_si256();
 
             __m256i xmm_str = _mm256_lddqu_si256((__m256i*) str);
            int mask = _mm256_movemask_epi8( _mm256_cmpeq_epi8(xmm_str, zero));
-        
-            if (mask != 0) 
+
+            if (mask != 0)
             {
                 const char* zero_byte = (const char*) str + __builtin_ffs(mask) - 1;
                 return zero_byte - str;
@@ -154,7 +154,7 @@
 
 Видно, что после последней оптимизации время работы уменьшилось на ~0.016, значит дальнейшая оптимизация будет нецелесообразна.
 
-Запустим valgrid еще раз чтобы убедиться в том что дальнейшие оптимизации будут напрасны 
+Запустим valgrid еще раз чтобы убедиться в том что дальнейшие оптимизации будут напрасны
 
 <img src="Graphics/Callgrind_without_opt.png"  alt="drawing" width="700"/>
 
