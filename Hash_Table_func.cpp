@@ -15,7 +15,7 @@ struct Hash_Table* Hash_Table_Ctor(const char* file_name, size_t size, uint32_t 
     FILE* file = fopen(file_name, "r");
     assert(file);
 
-    union Value* in_word = (union Value*) calloc(1, 256);
+    char* in_str = (char*) calloc(32, sizeof(char));
     struct Hash_Table* hash_table = (struct Hash_Table*) calloc(1, sizeof(struct Hash_Table));
     hash_table -> data = (struct Node**) calloc(size, sizeof(struct Node*));
     hash_table -> Calc_Hash = Calc_Hash;
@@ -24,18 +24,18 @@ struct Hash_Table* Hash_Table_Ctor(const char* file_name, size_t size, uint32_t 
     for (size_t i = 0; i < size; i++)
         hash_table -> data[i] = NULL;
 
-    while (fscanf(file, "%s", in_word -> str) == 1)
+    while (fscanf(file, "%s", in_str) == 1)
     {
         #ifdef WITH_MY_STRLEN
-        size_t len = my_strlen(in_word -> str);
+        size_t len = my_strlen(in_str);
         #else
-        size_t len = strlen(in_word -> str);
+        size_t len = strlen(in_str);
         #endif
-        memset(in_word -> str + len, '\0', 32 - len);
-        Insert_Elem(hash_table, in_word);
+        memset(in_str + len, '\0', 32 - len);
+        Insert_Elem(hash_table, in_str);
     }
 
-    free(in_word);
+    free(in_str);
 
     return hash_table;
 }
@@ -50,7 +50,7 @@ void Hash_Table_Dtor(struct Hash_Table* hash_table)
             temp_node = hash_table -> data[i];
             hash_table -> data[i] = (hash_table -> data[i]) -> next;
 
-            free(temp_node -> val);
+            //free(temp_node -> str);
             free(temp_node);
         }
     }
@@ -58,17 +58,17 @@ void Hash_Table_Dtor(struct Hash_Table* hash_table)
     free(hash_table);
 }
 
-struct Node* Is_in_Hash_Table(struct Hash_Table* hash_table, union Value* word)
+struct Node* Is_in_Hash_Table(struct Hash_Table* hash_table, char* str)
 {
-    int index = hash_table -> Calc_Hash(word -> str, hash_table -> size);
+    int index = hash_table -> Calc_Hash(str, hash_table -> size);
     struct Node* now_node = hash_table -> data[index];
 
     while(now_node != NULL)
     {
         #ifdef WITH_MY_STRCMP
-            if(!my_strcmp((__m256i*)(word -> str), (__m256i*)((now_node -> val) -> str)))
+            if(!my_strcmp((__m256i*)(str), (__m256i*)(now_node -> str)))
         #else
-            if(!strcmp(word -> str, (now_node -> val) -> str))
+            if(!strcmp(str, now_node -> str))
         #endif
                 return now_node;
 
@@ -77,39 +77,39 @@ struct Node* Is_in_Hash_Table(struct Hash_Table* hash_table, union Value* word)
     return NULL;
 }
 
-void Insert_Elem(struct Hash_Table* hash_table, union Value* in_word)
+void Insert_Elem(struct Hash_Table* hash_table, char* in_str)
 {
 
-    struct Node* find_node = Is_in_Hash_Table(hash_table, in_word);
+    struct Node* find_node = Is_in_Hash_Table(hash_table, in_str);
     if(find_node)
     {
         (find_node -> num)++;
         return;
     }
 
-    int index = hash_table -> Calc_Hash(in_word -> str, hash_table -> size);
+    int index = hash_table -> Calc_Hash(in_str, hash_table -> size);
 
-    struct Node* new_node = Create_Node(in_word -> str);
+    struct Node* new_node = Create_Node(in_str);
     new_node -> next = hash_table -> data[index];
     hash_table -> data[index] = new_node;
     //printf("%s\n", new_node -> val);
 }
 
-void Delete_Elem(struct Hash_Table* hash_table, union Value* del_word)
+void Delete_Elem(struct Hash_Table* hash_table, char* del_str)
 {
-    int index = hash_table -> Calc_Hash(del_word -> str, hash_table -> size);
+    int index = hash_table -> Calc_Hash(del_str, hash_table -> size);
     struct Node* now_node = hash_table -> data[index];
     struct Node* prev_node = NULL;
 
-    if(!Is_in_Hash_Table(hash_table, del_word))
+    if(!Is_in_Hash_Table(hash_table, del_str))
         return;
 
     while(now_node != NULL)
     {
         #ifdef WITH_MY_STRCMP
-            if(!my_strcmp((__m256i*)(del_word -> str), (__m256i*)((now_node -> val) -> str)))
+            if(!my_strcmp((__m256i*) del_str, (__m256i*)(now_node -> str)))
         #else
-            if(!strcmp(del_word -> str, (now_node -> val) -> str))
+            if(!strcmp(del_str, now_node -> str))
         #endif
         {
             if(prev_node != NULL)
@@ -117,7 +117,7 @@ void Delete_Elem(struct Hash_Table* hash_table, union Value* del_word)
             else
                 hash_table -> data[index] = now_node -> next;
 
-            free((now_node -> val) -> str);
+            free(now_node -> str);
             free(now_node);
             return;
         }
@@ -147,9 +147,7 @@ int* Find_Distribution(struct Hash_Table* hash_table)
 struct Node* Create_Node(char* val)
 {
     struct Node* new_node = (struct Node*) calloc(1, sizeof(struct Node));
-    new_node -> val = (union Value*) calloc(1, sizeof(union Value));
-    //new_node -> val = strndup(val, 32); // TODO: mop up mem leak
-    strncpy((new_node -> val) -> str, val, 32);
+    strncpy(new_node -> str, val, 32);
     new_node -> num = 1;
     new_node -> next = NULL;
     return new_node;
@@ -193,7 +191,7 @@ int my_strcmp(__m256i* str_1, __m256i* str_2)
 size_t my_strlen(char* str)
 {
     size_t len = 0;
-
+    /*
     asm volatile(
         ".intel_syntax noprefix\n\t"
 
@@ -217,9 +215,6 @@ size_t my_strlen(char* str)
         : "r" (str)
         : "%rcx", "%rdi", "cc"
     );
-    
-    //if(len != strlen(str))
-    //    printf(red(my)" = %d " green(std)" = %d\n", len, strlen(str));
-    
+    */
     return len;
 }

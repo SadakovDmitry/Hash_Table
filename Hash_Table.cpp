@@ -34,6 +34,7 @@ int main(const int argc, const char* argv[])
     const char* file_name = argv[1];
     const int num_hash_func = atoi(argv[2]);
 
+    char str[32] = {};
     struct Hash_Table* hash_table_temp = Hash_Table_Ctor(file_name, 10000, Calc_Hash_Rol);
     int num_unique_words = Hash_Table_Len(hash_table_temp);
     printf(green(Num of unique words) " : %d\n", num_unique_words);
@@ -49,9 +50,8 @@ int main(const int argc, const char* argv[])
 
     for(int i = 0 ; i < 10000000; i++)
     {
-        union Value val = {};
-        strncpy(val.str, "ciecnie", 32);
-        Is_in_Hash_Table(hash_table, &val);
+        strncpy(str, "ciecnie", 32);
+        Is_in_Hash_Table(hash_table, str);
     }
 
     time_t end = clock();

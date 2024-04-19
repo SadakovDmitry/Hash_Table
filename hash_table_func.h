@@ -9,15 +9,9 @@
 #define red(str)   "\033[31m"#str"\033[0m"
 #define green(str) "\033[32m"#str"\033[0m"
 
-union Value
-{
-    char str[32];
-    __m256i reg_str;
-};
-
 struct Node
 {
-    union Value* val;
+    char str[32];;
     int num;
     struct Node* next;
 };
@@ -31,9 +25,9 @@ struct Hash_Table
 
 struct Hash_Table* Hash_Table_Ctor  (const char* file_name, size_t size, uint32_t (Calc_Hash) (char*, uint32_t));
 void   Hash_Table_Dtor              (struct Hash_Table* hash_table);
-struct Node* Is_in_Hash_Table       (struct Hash_Table* hash_table, union Value* word);
-void   Insert_Elem                  (struct Hash_Table* hash_table, union Value* in_word);
-void   Delete_Elem                  (struct Hash_Table* hash_table, union Value* del_word);
+struct Node* Is_in_Hash_Table       (struct Hash_Table* hash_table, char* str);
+void   Insert_Elem                  (struct Hash_Table* hash_table, char* in_str);
+void   Delete_Elem                  (struct Hash_Table* hash_table, char* in_str);
 struct Node* Create_Node            (char* val);
 int*   Find_Distribution            (struct Hash_Table* hash_table);
 int    Hash_Table_Len               (struct Hash_Table* hash_table);
