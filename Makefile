@@ -1,7 +1,7 @@
 TARGET = hash_table
 #-fsanitize=address -Wall -Wextra
 FLAGS  = -O3 -mavx -mavx2 -g
-MY_OPT = -DWITH_MY_STRCMP -DWITH_MY_CRC32
+MY_OPT = -DWITH_MY_STRCMP -DWITH_MY_CRC32 -DWITH_MY_STRLEN
 
 .PHONY : clean
 clean :

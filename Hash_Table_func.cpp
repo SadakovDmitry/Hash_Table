@@ -27,7 +27,7 @@ struct Hash_Table* Hash_Table_Ctor(const char* file_name, size_t size, uint32_t 
     while (fscanf(file, "%s", in_str) == 1)
     {
         #ifdef WITH_MY_STRLEN
-        size_t len = my_strlen(in_str);
+        size_t len = strlen_simd(in_str);
         #else
         size_t len = strlen(in_str);
         #endif
@@ -50,7 +50,6 @@ void Hash_Table_Dtor(struct Hash_Table* hash_table)
             temp_node = hash_table -> data[i];
             hash_table -> data[i] = (hash_table -> data[i]) -> next;
 
-            //free(temp_node -> str);
             free(temp_node);
         }
     }
@@ -92,7 +91,6 @@ void Insert_Elem(struct Hash_Table* hash_table, char* in_str)
     struct Node* new_node = Create_Node(in_str);
     new_node -> next = hash_table -> data[index];
     hash_table -> data[index] = new_node;
-    //printf("%s\n", new_node -> val);
 }
 
 void Delete_Elem(struct Hash_Table* hash_table, char* del_str)
@@ -159,7 +157,6 @@ void Print_Arr(FILE* file, int* data, size_t size)
     {
         fprintf(file, "%d\n", data[i]);
     }
-    //fprintf(file, "\n");
 }
 
 int Hash_Table_Len(struct Hash_Table* hash_table)
@@ -217,4 +214,18 @@ size_t my_strlen(char* str)
     );
     */
     return len;
+}
+
+size_t strlen_simd(char* str)
+{
+    __m256i zero    = _mm256_setzero_si256();
+    __m256i xmm_str = _mm256_lddqu_si256((__m256i*) str);
+    int mask = _mm256_movemask_epi8( _mm256_cmpeq_epi8(xmm_str, zero));
+
+    if (mask != 0)
+    {
+        const char* zero_byte = (const char*) str + __builtin_ffs(mask) - 1;
+        return zero_byte - str;
+    }
+    return 0;
 }

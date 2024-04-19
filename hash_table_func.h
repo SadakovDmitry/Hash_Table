@@ -34,6 +34,7 @@ int    Hash_Table_Len               (struct Hash_Table* hash_table);
 void   Print_Arr                    (FILE* file, int* data, size_t size);
 int    my_strcmp                    (__m256i* str_1, __m256i* str_2);
 size_t my_strlen                    (char* str);
+size_t strlen_simd                  (char* str);
 
 
 #endif

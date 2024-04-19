@@ -66,7 +66,7 @@ uint32_t Calc_Hash_Crc32(char* x, uint32_t size)
     #ifndef WITH_MY_CRC32
         uint32_t crc = 0xFFFFFFFFUL;
         #ifdef WITH_MY_STRLEN
-        size_t len = my_strlen(x);
+        size_t len = strlen_simd(x);
         #else
         size_t len = strlen(x);
         #endif
@@ -75,7 +75,7 @@ uint32_t Calc_Hash_Crc32(char* x, uint32_t size)
             crc = (crc >> 8) ^ Crc32_Table[(crc ^ *x++) & 0xFF];
     #else
         #ifdef WITH_MY_STRLEN
-        unsigned long len = my_strlen(x);
+        unsigned long len = strlen_simd(x);
         #else
         unsigned long len = strlen(x);
         #endif
@@ -88,7 +88,7 @@ uint32_t Calc_Hash_Crc32(char* x, uint32_t size)
 uint32_t Calc_Hash_My_Crc32(char* x, uint32_t size)
 {
     #ifdef WITH_MY_STRLEN
-        size_t len = my_strlen(x);
+        size_t len = strlen_simd(x);
     #else
         size_t len = strlen(x);
     #endif
