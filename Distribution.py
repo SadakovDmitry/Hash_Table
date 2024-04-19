@@ -8,9 +8,6 @@ fig, ax = plt.subplots()
 with open("dist.txt", 'r') as file:
     dist = list(float(i) for i in file.readlines())
 
-with open("dist.txt", 'r') as file:
-    rep = list(float(i) for i in file.readlines())
-
 
 index = []
 for i in range(0, 769):
@@ -22,11 +19,11 @@ for i in range(0, 769):
 #plt.hist(dist, bins=20, alpha=1)
 #plt.hist(index , bins=20, alpha=1)
 #plt.hist(dist, color = 'blue', edgecolor = 'black', bins = int(180/5))
-plt.bar(index, dist)
-plt.title('Distribution', fontsize=20, fontname='Times New Roman')
+plt.bar(index, dist, width=2)
+plt.title(sys.argv[2], fontsize=20, fontname='Times New Roman')
 plt.xlabel('index', color='black')
 plt.ylabel('count',color='black')
-plt.grid(True)
+#plt.grid(True)
 #plt.legend(['Mid Elem','Mid of 3', 'Random', 'Mid of 3 random'], loc=2)
 
 print("Despersion =",math.sqrt(np.var(dist)))

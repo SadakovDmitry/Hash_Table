@@ -44,12 +44,13 @@ int main(const int argc, const char* argv[])
     int* dist = Find_Distribution(hash_table);
     FILE* file = fopen("dist.txt", "w");
     Print_Arr(file, dist, hash_table -> size);
+    //Hash_Table_Dtor(hash_table);
     //return 0;
 
     double time = 0.0;
     time_t start = clock();
 
-    for(int i = 0 ; i < 10000000; i++)
+    for(int i = 0 ; i < 100000000; i++)
     {
         strncpy(str, "ciecnie", 32);
         Is_in_Hash_Table(hash_table, str);

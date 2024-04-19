@@ -174,7 +174,7 @@ int Hash_Table_Len(struct Hash_Table* hash_table)
     return len;
 }
 
-int my_strcmp(__m256i* str_1, __m256i* str_2)
+inline int my_strcmp(__m256i* str_1, __m256i* str_2)
 {
     __m256i str_reg_1 = _mm256_lddqu_si256(str_1);
     __m256i str_reg_2 = _mm256_lddqu_si256(str_2);
@@ -185,7 +185,7 @@ int my_strcmp(__m256i* str_1, __m256i* str_2)
     return mask;
 }
 
-size_t my_strlen(char* str)
+inline size_t my_strlen(char* str)
 {
     size_t len = 0;
     /*
